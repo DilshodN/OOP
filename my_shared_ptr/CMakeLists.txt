@@ -3,4 +3,5 @@ project(my_shared_ptr)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(my_shared_ptr main.cpp shared_ptr.h counter.h)
+add_executable(my_shared_ptr main.cpp shared_ptr.h)
+add_subdirectory(test)
