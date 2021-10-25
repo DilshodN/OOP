@@ -143,6 +143,22 @@ TEST(SharedPTR, basic_ptr)
 
     EXPECT_EQ(0,     Struct::_mNbInstances);
 }
+class T{
+public:
+    ~T(){
+        std::cout << "~T()";
+    }
+};
+
+struct Deleter{
+    void operator()(T* const p){
+        delete[] p;
+    }
+};
+
+//TEST(SharedPTR, abc){
+//    SharedPTR<T[]> p(new T[10]);
+//}
 
 TEST(SharedPTR, reset_ptr)
 {

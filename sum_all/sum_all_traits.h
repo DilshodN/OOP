@@ -1,17 +1,10 @@
 #pragma once
 
-class A{
-    int k;
-public:
-    explicit A(int l) : k(l){};
-    A& operator+=(const A& rhs){
-        k += rhs.k;
-        return *this;
-    }
-};
-
 template<typename T>
-class SumAllTraits;
+class SumAllTraits{
+public:
+    using SumType = T;
+};
 
 template<>
 class SumAllTraits<std::string>
@@ -122,4 +115,3 @@ class SumAllTraits<double>
 public:
     using SumType = long double;
 };
-
