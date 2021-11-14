@@ -1,6 +1,7 @@
 # Directories
 cmake-build-debug/
 os_labs/
+cpp_experiments/
 .DS_Store
 .idea/
 
