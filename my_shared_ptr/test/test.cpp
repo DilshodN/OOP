@@ -150,15 +150,9 @@ public:
     }
 };
 
-struct Deleter{
-    void operator()(T* const p){
-        delete[] p;
-    }
-};
-
-//TEST(SharedPTR, abc){
-//    SharedPTR<T[]> p(new T[10]);
-//}
+TEST(SharedPTR, abc){
+    SharedPTR<T[]> p(new T[10]);
+}
 
 TEST(SharedPTR, reset_ptr)
 {
@@ -394,4 +388,33 @@ TEST(SharedPTR, swap_ptr)
     EXPECT_NE((void*)NULL, yPtr.get());
     EXPECT_EQ(234, yPtr->mVal);
     EXPECT_EQ(2, Struct::_mNbInstances);
+}
+
+
+
+struct TstStruct {
+    int m_value;
+
+    explicit TstStruct(int value) : m_value(value){};
+};
+
+
+
+
+TEST(SharedPTR, swap) {
+    SharedPTR<TstStruct> testPtr(new TstStruct(10));
+    EXPECT_TRUE(testPtr);
+    EXPECT_TRUE(testPtr.use_count() == 1);
+    EXPECT_TRUE(testPtr.unique());
+    SharedPTR<TstStruct> anotherPtr(new TstStruct(11));
+    EXPECT_TRUE(anotherPtr);
+    EXPECT_TRUE(anotherPtr.use_count() == 1);
+        EXPECT_TRUE(anotherPtr.unique());
+    testPtr.swap(anotherPtr);
+    EXPECT_EQ(testPtr->m_value, 11);
+    EXPECT_EQ(anotherPtr->m_value, 10);
+    EXPECT_TRUE(testPtr.use_count() == 1);
+    EXPECT_TRUE(testPtr.unique());
+    EXPECT_TRUE(anotherPtr.use_count() == 1);
+    EXPECT_TRUE(anotherPtr.unique());
 }

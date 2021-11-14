@@ -1,34 +1,36 @@
 #pragma once
+
 #include <iostream>
 #include "sum_all_traits.h"
 
-template <typename T>
-std::enable_if_t<(std::is_arithmetic_v<T> or std::is_same_v<T, std::string>), T>
-sum_all(const T& v){
+template<typename T>
+auto sum_all(const T &v) {
     return v;
 }
 
-template <typename T, typename =
-        std::enable_if_t<(
-        std::is_copy_assignable_v<typename T::value_type> and
-        std::is_default_constructible_v<typename T::value_type>)>
-        >
-decltype(auto) sum_all(const T& v){
-    typename SumAllTraits<typename T::value_type>::SumType res{};
-    for(const auto i: v){
+template<template<class, class> typename Container, typename Type, typename Alloc = std::allocator<Type>,
+        typename =std::enable_if_t<(
+                std::is_copy_assignable_v<Type> and
+                std::is_default_constructible_v<Type>)>
+>
+auto sum_all(const Container<Type, Alloc> &v) {
+    typename SumAllTraits<Type>::SumType res{};
+    for (const auto& i: v) {
         res = res + i;
     }
     return res;
 }
 
-template <typename T, typename =
+template<template<class, class, class, class> typename Map, typename Key, typename Value,
+        typename Comp = std::less<Key>, typename Alloc = std::allocator<std::pair<const Key, Value>>,
+        typename =
         std::enable_if_t<(
-        std::is_copy_assignable_v<typename T::mapped_type> and
-        std::is_default_constructible_v<typename T::mapped_type>)>
-        >
-auto sum_all(const T& v){
-    typename SumAllTraits<typename T::mapped_type>::SumType res{};
-    for (const auto i : v)
-        res = res + i.second;
+                std::is_copy_assignable_v<Value> and
+                std::is_default_constructible_v<Value>)>>
+auto sum_all(const Map<Key, Value, Comp, Alloc> &v) {
+    typename SumAllTraits<Value>::SumType res{};
+    for (const auto& [key, value]: v) {
+        res = res + value;
+    }
     return res;
 }

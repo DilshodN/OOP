@@ -1,15 +1,15 @@
 #pragma once
 #include <functional>
 
-template<typename Type, class TDeleter = std::default_delete<Type>>
+
+template<typename Type, class TDeleter = std::default_delete<Type>> // T[], TDeleter = delete[]
 class SharedPTR final{
     using t_SharedPTR = SharedPTR<Type, TDeleter>;
-    using ptr_type = Type*;
-    using value_type = Type;
+    using value_type = std::conditional_t<std::is_array_v<Type>, typename std::remove_extent_t<Type>, Type>;
     using deleter_type = TDeleter;
-    deleter_type deleter = std::default_delete<t_SharedPTR>();
 
-    ptr_type data = nullptr;
+    deleter_type deleter = TDeleter();
+    value_type* data = nullptr;
     long* count = nullptr;
 
     void increment_count(){
@@ -22,12 +22,13 @@ public:
     // https://en.cppreference.com/w/cpp/memory/shared_ptr/shared_ptr
     SharedPTR() = default;
     SharedPTR(std::nullptr_t) : data(nullptr), count(nullptr){};
-    explicit SharedPTR(typename SharedPTR<Type>::ptr_type ptr) {
+
+    explicit SharedPTR(value_type* ptr) {
         data = ptr;
         count = new long(0);
-        deleter = std::default_delete<Type>();
         increment_count();
     }
+
 
     SharedPTR(const t_SharedPTR& other) : data(other.data), count(other.count){
         increment_count();
@@ -36,6 +37,7 @@ public:
         other.data = nullptr;
         other.count = nullptr;
     };
+
     ~SharedPTR(){
         release();
     };
@@ -106,7 +108,7 @@ public:
         };
     };
 
-    void reset(ptr_type ptr = nullptr){
+    void reset(value_type* ptr = nullptr){
         release();
         data = ptr;
         count = new long(0);

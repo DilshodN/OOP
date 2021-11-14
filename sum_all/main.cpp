@@ -22,12 +22,15 @@ public:
         return k;
     }
 };
+class Complex{};
 
 int main() {
     A a(3);
     A b(4);
     A c(5);
     std::vector<A> v3 = { a, b, c };
+    std::vector<int> v = {1, 2, 3};
     cout << *sum_all(v3);
+
     return 0;
 }
