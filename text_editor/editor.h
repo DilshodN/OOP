@@ -5,6 +5,7 @@
 #include "insert.h"
 #include "paste.h"
 #include "parser.h"
+#include "command_dto.h"
 #include <vector>
 
 class Editor final{

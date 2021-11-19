@@ -17,11 +17,11 @@ std::string TextDocument::substr(const size_t &start, const size_t &end) const {
     return start <= size() and start <= end and not doc.empty() ? doc.substr(start, end - start) : std::string{};
 }
 
-const std::string& TextDocument::data() const {
+const std::string& TextDocument::data() const noexcept{
     return doc;
 }
 
-size_t TextDocument::size() const {
+size_t TextDocument::size() const noexcept{
     return doc.size();
 }
 

@@ -143,12 +143,7 @@ TEST(SharedPTR, basic_ptr)
 
     EXPECT_EQ(0,     Struct::_mNbInstances);
 }
-class T{
-public:
-    ~T(){
-        std::cout << "~T()";
-    }
-};
+class T{};
 
 TEST(SharedPTR, abc){
     SharedPTR<T[]> p(new T[10]);
@@ -398,9 +393,6 @@ struct TstStruct {
     explicit TstStruct(int value) : m_value(value){};
 };
 
-
-
-
 TEST(SharedPTR, swap) {
     SharedPTR<TstStruct> testPtr(new TstStruct(10));
     EXPECT_TRUE(testPtr);
@@ -417,4 +409,9 @@ TEST(SharedPTR, swap) {
     EXPECT_TRUE(testPtr.unique());
     EXPECT_TRUE(anotherPtr.use_count() == 1);
     EXPECT_TRUE(anotherPtr.unique());
+}
+
+TEST(SharedPTR, copy_assignment){
+    SharedPTR<T> a(new T);
+    EXPECT_NO_THROW(a = a);
 }

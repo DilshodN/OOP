@@ -43,29 +43,20 @@ public:
     };
 public:
     t_SharedPTR& operator=(t_SharedPTR&& other) noexcept{
-        release();
-        data = other.data;
-        count = other.count;
-        deleter = other.deleter;
-        other.data = nullptr;
-        other.count = nullptr;
-        return *this;
-    };
-    t_SharedPTR& operator=(Type* ptr){
-        release();
-        data = ptr;
-        if(data != nullptr){
-            count = new long(0);
-            increment_count();
+        if(this != other) {
+            SharedPTR(std::move(other)).swap(*this);
         }
         return *this;
     };
-    t_SharedPTR& operator=(const t_SharedPTR& other){
-        release();
-        data = other.data;
-        count = other.count;
-        deleter = other.deleter;
-        increment_count();
+    t_SharedPTR& operator=(Type* ptr) noexcept{
+        if(data != ptr) {
+            SharedPTR(ptr).swap(*this);
+        }
+        return *this;
+
+    };
+    t_SharedPTR& operator=(const t_SharedPTR& other) noexcept{
+        SharedPTR(other).swap(*this);
         return *this;
     };
 public:

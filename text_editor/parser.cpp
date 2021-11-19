@@ -1,43 +1,50 @@
 #include "parser.h"
 
 namespace {
-    void parse_copy(Editor *editor, std::istringstream &line) {
+    void parse_copy(std::vector<CommandDTO>& commands, std::istringstream &line) {
         std::string start, end;
         line >> start;
         start.erase(start.size() - 1, 1);
         line >> end;
-        editor->Copy(std::stoul(start), std::stoul(end));
+        commands.emplace_back(Command::COPY, "", std::stoul(start), std::stoul(end));
     }
 
-    void parse_paste(Editor *editor, std::istringstream &line) {
+    void parse_paste(std::vector<CommandDTO>& commands, std::istringstream &line) {
         std::string start;
         line >> start;
-        editor->Paste(std::stoul(start));
+        commands.emplace_back(Command::PASTE, "", std::stoul(start));
     }
 
-    void parse_insert(Editor *editor, std::istringstream &line) {
+    void parse_insert(std::vector<CommandDTO>& commands, std::istringstream &line) {
         std::string text_of_insert, idx;
         line >> text_of_insert;
         line >> idx;
         // "Hello, there", -> Hello, there
         text_of_insert.erase(0, 1);
         text_of_insert.erase(text_of_insert.size() - 2, 2);
-        editor->Insert(std::move(text_of_insert), std::stoul(idx));
+        commands.emplace_back(Command::INSERT, std::move(text_of_insert), std::stoul(idx));
     }
 
-    void parse_delete(Editor *editor, std::istringstream &line) {
+    void parse_delete(std::vector<CommandDTO>& commands, std::istringstream &line) {
         std::string start, end;
         line >> start;
         start.erase(start.size() - 1, 1);
         line >> end;
-        editor->Delete(std::stoul(start), std::stoul(end));
+        commands.emplace_back(Command::DELETE, "", std::stoul(start), std::stoul(end));
+    }
+    void parse_undo(std::vector<CommandDTO>& commands){
+        commands.emplace_back(Command::UNDO);
+    }
+    void parse_redo(std::vector<CommandDTO>& commands){
+        commands.emplace_back(Command::REDO);
     }
 }
 
-void CommandParser::parse(Editor* editor, std::istream &input){
+std::vector<CommandDTO> CommandParser::parse(std::istream &input) {
     std::string buffer;
-    while(std::getline(input, buffer)){
-        if(not std::regex_match(buffer, commands_regex)){
+    std::vector<CommandDTO> commands;
+    while (std::getline(input, buffer)) {
+        if (not std::regex_match(buffer, commands_regex)) {
             throw std::invalid_argument("Invalid command");
         }
         std::istringstream line(buffer);
@@ -46,47 +53,30 @@ void CommandParser::parse(Editor* editor, std::istream &input){
         Command cmd = match_command(command_name);
         switch (cmd) {
             case Command::COPY:
-                parse_copy(editor, line);
+                parse_copy(commands, line);
                 break;
             case Command::PASTE:
-                parse_paste(editor, line);
+                parse_paste(commands, line);
                 break;
             case Command::INSERT:
-                parse_insert(editor, line);
+                parse_insert(commands, line);
                 break;
             case Command::DELETE:
-                parse_delete(editor, line);
+                parse_delete(commands, line);
                 break;
             case Command::UNDO:
-                editor->Undo();
+                parse_undo(commands);
                 break;
             case Command::REDO:
-                editor->Redo();
+                parse_redo(commands);
                 break;
             case Command::NONE:
                 break;
         }
     }
+    return commands;
 }
 
 Command CommandParser::match_command(const std::string &command_name) {
-    if(command_name == "copy") {
-        return Command::COPY;
-    }
-    if(command_name == "paste") {
-        return Command::PASTE;
-    }
-    if(command_name == "insert") {
-        return Command::INSERT;
-    }
-    if(command_name == "delete") {
-        return Command::DELETE;
-    }
-    if(command_name == "undo") {
-        return Command::UNDO;
-    }
-    if(command_name == "redo") {
-        return Command::REDO;
-    }
-    return Command::NONE;
+    return table_of_commands.contains(command_name) ? table_of_commands.at(command_name) : Command::NONE;
 }

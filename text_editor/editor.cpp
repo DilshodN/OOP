@@ -41,6 +41,31 @@ void Editor::Save(std::ostream &out) const {
 }
 
 void Editor::run(std::istream &in_commands) {
-    CommandParser::parse(this, in_commands);
+    std::vector<CommandDTO> vector_of_dto = CommandParser::parse(in_commands);
+    for(const auto& dto: vector_of_dto){
+        auto name = dto.get_name();
+        switch (name) {
+            case Command::COPY:
+                this->Copy(dto.get_start(), dto.get_end());
+                break;
+            case Command::PASTE:
+                this->Paste(dto.get_start());
+                break;
+            case Command::INSERT:
+                this->Insert(std::move(dto.get_buff()), dto.get_start());
+                break;
+            case Command::DELETE:
+                this->Delete(dto.get_start(), dto.get_end());
+                break;
+            case Command::UNDO:
+                this->Undo();
+                break;
+            case Command::REDO:
+                this->Redo();
+                break;
+            case Command::NONE:
+                break;
+        }
+    }
 }
 
