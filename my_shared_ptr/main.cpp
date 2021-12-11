@@ -11,10 +11,10 @@ public:
 };
 
 int main() {
-    SharedPTR<T[]> a(new T[10]);
-    std::shared_ptr<int> b(new int(5));
-    shared_ptr<int> c(new int(6));
-    b = c;
+    SharedPTR<int> a = make_shared_ptr<int>(5);
+//    a = b;
+    a.reset(new int(6));
+    cout << *a << endl;
 
     return 0;
 }

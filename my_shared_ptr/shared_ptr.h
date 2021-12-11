@@ -2,13 +2,12 @@
 #include <functional>
 
 
-template<typename Type, class TDeleter = std::default_delete<Type>> // T[], TDeleter = delete[]
+template<typename Type, class TDeleter = std::default_delete<Type>>
 class SharedPTR final{
     using t_SharedPTR = SharedPTR<Type, TDeleter>;
     using value_type = std::conditional_t<std::is_array_v<Type>, typename std::remove_extent_t<Type>, Type>;
     using deleter_type = TDeleter;
 
-    deleter_type deleter = TDeleter();
     value_type* data = nullptr;
     long* count = nullptr;
 
@@ -18,10 +17,15 @@ class SharedPTR final{
         }
     };
 
+    void assign(const t_SharedPTR& other){
+        release();
+        data = other.data;
+        count = other.count;
+    }
+
 public:
-    // https://en.cppreference.com/w/cpp/memory/shared_ptr/shared_ptr
     SharedPTR() = default;
-    SharedPTR(std::nullptr_t) : data(nullptr), count(nullptr){};
+    SharedPTR(std::nullptr_t){};
 
     explicit SharedPTR(value_type* ptr) {
         data = ptr;
@@ -33,7 +37,7 @@ public:
     SharedPTR(const t_SharedPTR& other) : data(other.data), count(other.count){
         increment_count();
     };
-    SharedPTR(t_SharedPTR&& other) noexcept : data(other.data), count(other.count), deleter(other.deleter){
+    SharedPTR(t_SharedPTR&& other) noexcept : data(other.data), count(other.count){
         other.data = nullptr;
         other.count = nullptr;
     };
@@ -43,39 +47,43 @@ public:
     };
 public:
     t_SharedPTR& operator=(t_SharedPTR&& other) noexcept{
-        if(this != other) {
-            SharedPTR(std::move(other)).swap(*this);
+        if(this == &other) {
+            return *this;
         }
+        assign(other);
+        other.data = nullptr;
+        other.count = nullptr;
         return *this;
     };
-    t_SharedPTR& operator=(Type* ptr) noexcept{
-        if(data != ptr) {
-            SharedPTR(ptr).swap(*this);
-        }
+    t_SharedPTR& operator=(value_type* ptr){
+        *this = t_SharedPTR(ptr);
         return *this;
-
     };
     t_SharedPTR& operator=(const t_SharedPTR& other) noexcept{
-        SharedPTR(other).swap(*this);
+        if(this == &other) {
+            return *this;
+        }
+        assign(other);
+        increment_count();
         return *this;
     };
 public:
-    Type* get() const {
+    value_type* get() const {
         return data;
     };
     operator bool() const{
-        return get() != nullptr;
+        return data != nullptr;
     };
-    // Dereferences the stored pointer. The behavior is undefined if the stored pointer is null. (cpp_reference)
-    Type& operator*() const {
-        return *get();
+
+    value_type& operator*() const {
+        return *data;
     };
-    Type* operator->() const {
-        return get();
+    value_type* operator->() const {
+        return data;
     };
 
     TDeleter& get_deleter(){
-        return deleter;
+        return deleter_type();
     };
 
     long use_count() const {
@@ -90,7 +98,7 @@ public:
     void release(){
         if(count != nullptr){
             if(*count == 1){
-                deleter(data);
+                deleter_type()(data);
                 delete count;
             }
             else {
@@ -100,13 +108,15 @@ public:
     };
 
     void reset(value_type* ptr = nullptr){
-        release();
-        data = ptr;
-        count = new long(0);
-        increment_count();
+        *this = ptr;
     };
     void swap(t_SharedPTR& sharedPTR){
         std::swap(data, sharedPTR.data);
         std::swap(count, sharedPTR.count);
     };
 };
+
+template<typename T, typename ... Args>
+SharedPTR<T> make_shared_ptr(Args&&... args){
+    return SharedPTR<T>(new T(std::forward<Args>(args)...));
+}

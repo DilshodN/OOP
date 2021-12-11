@@ -7,5 +7,6 @@ enum class Command{
     DELETE,
     UNDO,
     REDO,
-    NONE
+    NONE,
+    NO_COMMAND
 };

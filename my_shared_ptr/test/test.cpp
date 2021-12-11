@@ -414,4 +414,10 @@ TEST(SharedPTR, swap) {
 TEST(SharedPTR, copy_assignment){
     SharedPTR<T> a(new T);
     EXPECT_NO_THROW(a = a);
+    double* b = new double(.1);
+    SharedPTR<double> b1(b);
+    SharedPTR<double> b2 = b1;
+    EXPECT_EQ(b2.use_count(), 2);
+    EXPECT_NO_THROW(b1 = b2);
+
 }

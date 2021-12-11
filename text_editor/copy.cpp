@@ -1,17 +1,14 @@
-//
-// Created by dilshod on 14.11.2021.
-//
-
 #include "copy.h"
+#include "buffer.h"
+CopyCommand::CopyCommand(const size_t &start, const size_t &end):
+        start(start), end(end){}
 
-CopyCommand::CopyCommand(TextDocument &text, std::string& buffer, const size_t &start, const size_t &end):
-        EditorCommand(text), copied_text(buffer), start(start), end(end){}
-
-void CopyCommand::execute() {
-    previous_text = copied_text;
-    copied_text = text.substr(start, end);
+void CopyCommand::execute(TextDocument& text) {
+    previous_text = Buffer::getInstance().getBuffer();
+    auto temp = text.substr(start, end);
+    Buffer::getInstance().getBuffer() = temp;
 }
 
-void CopyCommand::undo() {
-    copied_text = previous_text;
+void CopyCommand::undo(TextDocument& text) {
+    Buffer::getInstance().getBuffer() = previous_text;
 }

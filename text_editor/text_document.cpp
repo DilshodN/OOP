@@ -17,7 +17,7 @@ std::string TextDocument::substr(const size_t &start, const size_t &end) const {
     return start <= size() and start <= end and not doc.empty() ? doc.substr(start, end - start) : std::string{};
 }
 
-const std::string& TextDocument::data() const noexcept{
+std::string_view TextDocument::data() const noexcept{
     return doc;
 }
 

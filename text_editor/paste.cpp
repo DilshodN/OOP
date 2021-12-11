@@ -1,13 +1,13 @@
 #include "paste.h"
+#include "buffer.h"
 
+PasteCommand::PasteCommand(const size_t &start):start(start){}
 
-PasteCommand::PasteCommand(TextDocument& text, std::string &buffer, const size_t &start):
-        EditorCommand(text), pasted_text(buffer), start(start){}
-
-void PasteCommand::execute() {
-    text.insert(pasted_text, start);
+void PasteCommand::execute(TextDocument& text) {
+    auto buff = Buffer::getInstance();
+    text.insert(buff.getBuffer(), start);
 }
 
-void PasteCommand::undo() {
-    text.erase(start, start + pasted_text.size());
+void PasteCommand::undo(TextDocument& text) {
+    text.erase(start, start + Buffer::getInstance().getBuffer().size());
 }

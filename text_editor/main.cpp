@@ -1,16 +1,17 @@
 #include <iostream>
-#include <fstream>
+#include "parser.h"
+#include "editor_manager.h"
 #include "text_document.h"
 #include "editor.h"
 
 using namespace std;
 int main() {
-    std::ifstream in_file("input.txt");
-    std::ifstream commands("commands.txt");
-    auto doc = TextDocument(in_file);
-    cout << "Init doc: " << doc.data() << endl;
-    Editor editor(doc);
-    editor.run(commands);
-    cout << doc.data();
+    std::istringstream input("abc def");
+    std::istringstream commands("copy 1, 3\npaste 0");
+    auto doc = TextDocument(input);
+    auto editor = Editor(doc);
+    CommandParser parser(commands);
+    EditorManager manager(editor, parser);
+    manager.execute();
     return 0;
 }
