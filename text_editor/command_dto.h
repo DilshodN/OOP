@@ -6,9 +6,9 @@ class CommandDTO final{
     std::string buff;
     Command cmd_name;
 public:
-    CommandDTO() = default;
+    CommandDTO() = delete;
     CommandDTO(Command name_of_cmd, const std::string buff = "",
-               const std::size_t& idx1 = 0, const std::size_t& idx2 = 0);
+               const std::size_t idx1 = 0, const std::size_t idx2 = 0);
     std::size_t get_start() const;
     std::size_t get_end() const;
     std::string get_buff() const;

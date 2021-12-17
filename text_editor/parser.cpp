@@ -1,21 +1,13 @@
 #include "parser.h"
 
 namespace {
+    const std::regex commands_regex = std::regex("copy [0-9]+, [0-9]+|"
+                                                 "paste [0-9]+|"
+                                                 "insert \"[^ \f\n\r\t\v]+\", [0-9]+|"
+                                                 "delete [0-9]+, [0-9]+|"
+                                                 "undo|"
+                                                 "redo");
 
-    const std::map<std::string, Command> table_of_commands = {{"copy",   Command::COPY},
-                                                              {"paste",  Command::PASTE},
-                                                              {"insert", Command::INSERT},
-                                                              {"delete", Command::DELETE},
-                                                              {"undo",   Command::UNDO},
-                                                              {"redo",   Command::REDO},
-                                                              {"delete", Command::DELETE}};
-
-    const std::regex commands_regex =std::regex("copy [0-9]+, [0-9]+|"
-                                                    "paste [0-9]+|"
-                                                    "insert \"[^ \f\n\r\t\v]+\", [0-9]+|"
-                                                    "delete [0-9]+, [0-9]+|"
-                                                    "undo|"
-                                                    "redo");
 
     CommandDTO parse_copy(std::istringstream &line) {
         std::string start, end;
@@ -49,24 +41,31 @@ namespace {
         return CommandDTO(Command::DELETE, "", std::stoul(start), std::stoul(end));
     }
 
-    CommandDTO parse_undo() {
+    CommandDTO parse_undo(std::istringstream &line) {
         return CommandDTO(Command::UNDO);
     }
 
-    CommandDTO parse_redo() {
+    CommandDTO parse_redo(std::istringstream &line) {
         return CommandDTO(Command::REDO);
     }
+
+    typedef CommandDTO (*parser_util_function)(std::istringstream &);
+
+    const std::map<std::string, parser_util_function> mapped_util_functions = {{"copy",   parse_copy},
+                                                                               {"paste",  parse_paste},
+                                                                               {"insert", parse_insert},
+                                                                               {"delete", parse_delete},
+                                                                               {"undo",   parse_undo},
+                                                                               {"redo",   parse_redo}};
 }
 
-CommandParser::CommandParser(std::istream &input_stream): input(input_stream) {}
+CommandParser::CommandParser(std::istream &input_stream) : input(input_stream) {}
 
-CommandDTO CommandParser::get_next() {
-    CommandDTO command;
-
+std::optional<CommandDTO> CommandParser::get_next() {
     std::string buffer;
 
-    if(not std::getline(input, buffer)){
-        return CommandDTO(Command::NO_COMMAND);
+    if (not std::getline(input, buffer)) {
+        return {};
     }
 
     if (not std::regex_match(buffer, commands_regex)) {
@@ -77,34 +76,8 @@ CommandDTO CommandParser::get_next() {
     std::string command_name;
     line >> command_name;
 
-    Command cmd = match_command(command_name);
-    switch (cmd) {
-        case Command::COPY:
-            command = std::move(parse_copy(line));
-            break;
-        case Command::PASTE:
-            command = std::move(parse_paste(line));
-            break;
-        case Command::INSERT:
-            command = std::move(parse_insert(line));
-            break;
-        case Command::DELETE:
-            command = std::move(parse_delete(line));
-            break;
-        case Command::UNDO:
-            command = std::move(parse_undo());
-            break;
-        case Command::REDO:
-            command = std::move(parse_redo());
-            break;
-        default:
-            break;
-    }
+    auto command = mapped_util_functions.at(command_name)(line);
     return command;
-}
-
-Command CommandParser::match_command(const std::string &command_name) {
-    return table_of_commands.contains(command_name) ? table_of_commands.at(command_name) : Command::NONE;
 }
 
 

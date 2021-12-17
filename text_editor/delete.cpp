@@ -1,6 +1,6 @@
 #include "delete.h"
 
-DeleteCommand::DeleteCommand(const size_t &start, const size_t &end):
+DeleteCommand::DeleteCommand(const size_t start, const size_t end):
         start(start), end(end){}
 
 void DeleteCommand::execute(TextDocument &text) {

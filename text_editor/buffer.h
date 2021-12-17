@@ -1,24 +1,15 @@
 #pragma once
 #include <string>
 
-class Buffer;  // опережающее объявление
-
-class BufferDestroyer{
-    Buffer* p_instance;
-public:
-    ~BufferDestroyer();
-    void initialize(Buffer* p);
-};
 
 class Buffer{
-    static Buffer* p_instance;
-    static BufferDestroyer destroyer;
+private:
     std::string buffer;
-protected:
-    Buffer() {}
-    friend class SingletonDestroyer;
+    Buffer() = default;
+    Buffer(Buffer const&) = delete;
+    void operator=(Buffer const&) = delete;
 public:
-    static Buffer& getInstance();
-    std::string& getBuffer();
-    ~Buffer() {}
+    static Buffer& getBuffer();
+    const std::string& read() const;
+    void write(const std::string& text);
 };

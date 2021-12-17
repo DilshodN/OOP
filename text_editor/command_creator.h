@@ -7,9 +7,7 @@
 #include "insert.h"
 #include "paste.h"
 #include "parser.h"
-
 #include "command_dto.h"
-
 #include "service_command.h"
 #include "undo.h"
 #include "redo.h"

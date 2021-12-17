@@ -1,7 +1,7 @@
 #include "editor.h"
 #include "buffer.h"
 
-void Editor::execute(std::unique_ptr<EditorCommand>&& cmd) {
+void Editor::execute(std::unique_ptr<EditorCommand> cmd) {
     commands.emplace_back(std::move(cmd));
     auto& last_command = commands.back();
     last_command->execute(text);
@@ -26,4 +26,3 @@ void Editor::Redo() {
 void Editor::Save(std::ostream &out) const {
     text.save(out);
 }
-

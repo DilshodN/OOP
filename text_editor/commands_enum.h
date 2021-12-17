@@ -6,7 +6,5 @@ enum class Command{
     INSERT,
     DELETE,
     UNDO,
-    REDO,
-    NONE,
-    NO_COMMAND
+    REDO
 };
