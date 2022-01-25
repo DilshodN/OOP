@@ -1,1 +1,1 @@
-Проект за 4 семестр
+Project of 4th term
