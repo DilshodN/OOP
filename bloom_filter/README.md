@@ -1,2 +1,2 @@
-bloom filter
+bloom filter.
 Shishkin 
