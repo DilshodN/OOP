@@ -11,150 +11,6 @@ static Matrix big_diagonal_matrix = Matrix::create_diagonal(big_size_for_mult, 1
 static Matrix big_filled_matrix(big_size_for_sum, big_size_for_sum, 777);
 static Matrix big_empty_matrix(big_size_for_sum, big_size_for_sum);
 
-void time_test_sum(Matrix &A, Matrix &B, size_t thread_count) {
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-    Matrix C = A.fast_sum_with(B, thread_count);
-    std::chrono::duration<double> dur = std::chrono::high_resolution_clock::now() - start;
-    std::cout << "Multithreading calculation of the sum " << A.get_rows() << "x" << A.get_rows() << " with "
-              << thread_count << " threads : " << dur.count() << std::endl;
-}
-
-void time_test_mult(Matrix &A, Matrix &B, size_t thread_count) {
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-    Matrix C = A.fast_multiply_with(B, thread_count);
-    std::chrono::duration<double> dur = std::chrono::high_resolution_clock::now() - start;
-    std::cout << "Multithreading calculation of the mult " << A.get_rows() << "x" << A.get_rows() << " with "
-              << thread_count << " threads : " << dur.count() << std::endl;
-}
-
-void time_test_det(Matrix &A, size_t thread_count) {
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-    double det = A.fast_det(A, thread_count);
-    std::chrono::duration<double> dur = std::chrono::high_resolution_clock::now() - start;
-    std::cout << "Multithreading calculation of the det " << A.get_rows() << "x" << A.get_rows() << " with "
-              << thread_count << " threads : " << dur.count() << std::endl;
-}
-
-void time_test_det_no_rec(Matrix &A, size_t thread_count) {
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-    double det = A.calculate_det_without_recursion(A, thread_count);
-    std::chrono::duration<double> dur = std::chrono::high_resolution_clock::now() - start;
-    std::cout << "Multithreading calculation of the det without recursion " << A.get_rows() << "x" << A.get_rows() << " with "
-              << thread_count << " threads : " << dur.count() << std::endl;
-}
-
-TEST(time_research, sum100) {
-    Matrix A(100, 100, 1);
-    Matrix B(100, 100, 1);
-    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-    Matrix C = A.sum_with(B);
-    std::chrono::duration<double> dur = std::chrono::system_clock::now() - start;
-    std::cout << "Execution of sum " << A.get_rows() << "x" << A.get_rows() << " " << dur.count() << std::endl;
-
-    for (size_t i = 2; i <= 10; i++) {
-        time_test_sum(A, B, i);
-    }
-}
-
-TEST(time_research, sum500) {
-    Matrix A(500, 500, 1);
-    Matrix B(500, 500, 1);
-    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-    Matrix C = A.sum_with(B);
-    std::chrono::duration<double> dur = std::chrono::system_clock::now() - start;
-    std::cout << "Execution of sum " << A.get_rows() << "x" << A.get_rows() << " " << dur.count() << std::endl;
-
-    for (size_t i = 2; i <= 10; i++) {
-        time_test_sum(A, B, i);
-    }
-}
-
-TEST(time_research, sum1000) {
-    Matrix A(1000, 1000, 1);
-    Matrix B(1000, 1000, 1);
-    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-    Matrix C = A.sum_with(B);
-    std::chrono::duration<double> dur = std::chrono::system_clock::now() - start;
-    std::cout << "Execution of sum " << A.get_rows() << "x" << A.get_rows() << " " << dur.count() << std::endl;
-
-    for (size_t i = 2; i <= 10; i++) {
-        time_test_sum(A, B, i);
-    }
-}
-
-TEST(time_research, sum5000) {
-    Matrix A(5000, 5000, 1);
-    Matrix B(5000, 5000, 1);
-    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-    Matrix C = A.sum_with(B);
-    std::chrono::duration<double> dur = std::chrono::system_clock::now() - start;
-    std::cout << "Execution of sum " << A.get_rows() << "x" << A.get_rows() << " " << dur.count() << std::endl;
-
-    for (size_t i = 2; i <= 10; i++) {
-        time_test_sum(A, B, i);
-    }
-}
-
-TEST(time_research, mult100) {
-    Matrix A(100, 100, 1);
-    Matrix B(100, 100, 1);
-    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-    Matrix C = A.multiply_with(B);
-    std::chrono::duration<double> dur = std::chrono::system_clock::now() - start;
-    std::cout << "Execution of sum " << A.get_rows() << "x" << A.get_rows() << " " << dur.count() << std::endl;
-
-    for (size_t i = 2; i <= 10; i++) {
-        time_test_mult(A, B, i);
-    }
-}
-
-TEST(time_research, mult250) {
-    Matrix A(250, 250, 1);
-    Matrix B(250, 250, 1);
-    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-    Matrix C = A.multiply_with(B);
-    std::chrono::duration<double> dur = std::chrono::system_clock::now() - start;
-    std::cout << "Execution of multiply " << A.get_rows() << "x" << A.get_rows() << " " << dur.count() << std::endl;
-
-    for (size_t i = 2; i <= 10; i++) {
-        time_test_mult(A, B, i);
-    }
-}
-
-TEST(time_research, det9x9) {
-    Matrix A(9, 9, 1);
-
-    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-    double det = A.det();
-    std::chrono::duration<double> dur = std::chrono::system_clock::now() - start;
-    std::cout << "Execution of det " << A.get_rows() << "x" << A.get_rows() << " " << dur.count() << std::endl;
-
-    for (size_t i = 2; i <= 6; i += 2) {
-        time_test_det(A, i);
-    }
-}
-
-TEST(time_research, det10x10) {
-    Matrix A(10, 10, 1);
-
-    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-    double det = A.det();
-    std::chrono::duration<double> dur = std::chrono::system_clock::now() - start;
-    std::cout << "Execution of det " << A.get_rows() << "x" << A.get_rows() << " " << dur.count() << std::endl;
-
-    for (size_t i = 2; i <= 6; i += 2) {
-        time_test_det(A, i);
-    }
-}
-
-TEST(time_research, det15x15) {
-    Matrix A(15, 15, 1);
-
-    for (size_t i = 1; i <= 10; i += 1) {
-        time_test_det_no_rec(A, i);
-    }
-}
-
 
 TEST(Matrix_determinant, simple) {
     Matrix identity = Matrix::create_diagonal(9, 2);
@@ -162,17 +18,19 @@ TEST(Matrix_determinant, simple) {
     EXPECT_TRUE(det == 512);
 }
 
-TEST(Matrix_determinant, no_rec) {
-    Matrix identity = Matrix::create_diagonal(9, 2);
-    double det = identity.calculate_det_without_recursion(identity, 4);
-    EXPECT_TRUE(det == 512);
-}
 
 TEST(Matrix_determinant, multithreading) {
     Matrix identity = Matrix::create_diagonal(9, 2);
     identity.multithreading_on();
     double det = identity.det();
     EXPECT_TRUE(det == 512);
+}
+
+TEST(Matrix_determinant, testing_multithreading_det_with_no_recursion) {
+    Matrix identity = Matrix::create_diagonal(30, 2);
+    identity.multithreading_on();
+    double det = identity.det();
+    EXPECT_EQ(det, 1073741824);
 }
 
 TEST(Matrix_multiplication, simple) {
@@ -209,4 +67,38 @@ TEST(Matrix_substract, multithreading) {
     big_filled_matrix.multithreading_on();
     Matrix substract = big_filled_matrix - big_empty_matrix;
     EXPECT_TRUE(substract == big_filled_matrix);
+}
+
+Matrix diagonal0(size_t n, double val = 1.0) {
+    Matrix m{n};
+    for (size_t i = 0; i < m.get_rows(); i++)
+        for (size_t k = 0; k < m.get_rows(); k++)
+            if (i != k) m.at(i, k) = val;
+    return m;
+}
+
+TEST(Matrix_determinant, simple_d0) {
+    Matrix identity = diagonal0(9);
+    double det = identity.det();
+    EXPECT_DOUBLE_EQ(det, 8.0);
+}
+
+TEST(Matrix_determinant, no_rec_d0) {
+    Matrix identity = diagonal0(9);
+    identity.multithreading_on();
+    double det = identity.det();
+    EXPECT_DOUBLE_EQ(det, 8.0);
+}
+
+TEST(Matrix_determinant, simple_d010) {
+    Matrix identity = diagonal0(10);
+    double det = identity.det();
+    EXPECT_DOUBLE_EQ(det, -9.0);
+}
+
+TEST(Matrix_determinant, no_rec_d010) {
+    Matrix identity = diagonal0(10);
+    identity.multithreading_on();
+    double det = identity.det();
+    EXPECT_DOUBLE_EQ(det, -9.0);
 }

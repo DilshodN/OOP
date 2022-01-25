@@ -59,8 +59,14 @@ Matrix operator-(const Matrix &first, const Matrix &second) {
 }
 
 double Matrix::det() const {
-    return multithreading ?
-           fast_det(*this, std::thread::hardware_concurrency()) : simple_det(*this);
+    if(multithreading){
+//        double det = 1;
+//        fast_det(*this, std::thread::hardware_concurrency(), det);
+        return fast_det(*this, std::thread::hardware_concurrency());
+    }
+    else{
+        return fast_det(*this, 1);
+    }
 }
 
 bool Matrix::operator==(const Matrix &another) const {
@@ -69,6 +75,10 @@ bool Matrix::operator==(const Matrix &another) const {
         if (matrix[i] != another.matrix[i]) return false;
     }
     return true;
+}
+
+bool Matrix::operator!=(const Matrix &another) const {
+    return !(*this == another);
 }
 
 
@@ -89,6 +99,10 @@ void Matrix::fill(double value) {
             matrix[i][j] = value;
         }
     }
+}
+
+size_t Matrix::get_cols() const{
+    return cols;
 }
 
 size_t Matrix::get_rows() const {
@@ -145,26 +159,10 @@ Matrix Matrix::minor(const Matrix &mat, size_t col_index) {
     return sub_mat;
 }
 
-double Matrix::simple_det(const Matrix &mat) const {
-    double det = 0;
-    int sign = 1;
-    if (mat.cols == 1) {
-        return mat.matrix[0][0];
-    }
-    if (mat.cols == 2) {
-        return mat.matrix[0][0] * mat.matrix[1][1] - mat.matrix[0][1] * mat.matrix[1][0];
-    }
-    for (size_t i = 0; i < mat.cols; i++) {
-        det = det + (sign * mat.matrix[0][i] * simple_det(minor(mat, i)));
-        sign = -sign;
-    }
-    return det;
-}
-
 size_t Matrix::col_max(const size_t column) const{
     double max = std::abs(matrix[column][column]);
     auto max_pos = column;
-    for (auto i = column + 1; i < rows; ++i) {
+    for (auto i = column + 1; i < get_rows(); ++i) {
         double element = std::abs(matrix[i][column]);
         if (element > max) {
             max = element;
@@ -186,47 +184,16 @@ void Matrix::triangulation(Matrix& mat, const size_t current, const size_t begin
 {
     for (auto j = begin; j < end; ++j) {
         const auto mul = - mat.at(j, current) / mat.at(current, current);
-        for (auto k = current; k < mat.rows; ++k) {
+        for (auto k = current; k < mat.get_rows(); ++k) {
             mat.at(j, k) += mat.at(current, k) * mul;
         }
     }
 }
 
-double Matrix::calculate_det_without_recursion(const Matrix &mat, size_t num_of_threads) {
-    Matrix _matrix(mat);
-    auto sgn = 1;
-    for(size_t i = 0; i < _matrix.rows - 1; ++i){
-        const auto imax = _matrix.col_max(i);
-        if(std::abs(_matrix.at(imax, i)) < std::numeric_limits<double>::epsilon()) {
-            return 0;
-        }
-        if(i != imax){
-            sgn *= -1;
-            _matrix.swap_rows(i, imax);
-        }
-
-        std::vector<std::future<void>> threads;
-        double n = static_cast<double>(_matrix.rows - i - 1) / static_cast<double>(num_of_threads);
-        for(size_t j = 0; j < num_of_threads; j++) {
-            auto begin = static_cast<size_t>(j * n + 1 + i);
-            auto end = static_cast<size_t>((j + 1) * n + 1 + i);
-
-            if(j < num_of_threads - 1) {
-                threads.push_back(std::async(triangulation, std::ref(_matrix), i, begin, end));
-            }
-            else{
-                triangulation(_matrix, i, begin, end);
-            }
-        }
-        for(auto& j: threads){
-            j.get();
-        }
-    }
-    auto det = 1;
-    for(size_t i = 0; i < _matrix.rows; ++i){
-        det *= _matrix.at(i, i);
-    }
-    return det;
+void Matrix::set_limits(size_t _max_rows_sum, size_t _max_rows_mult, size_t _max_rows_det) {
+    max_rows_sum = _max_rows_sum;
+    max_rows_mult = _max_rows_mult;
+    max_rows_det = _max_rows_det;
 }
 
 

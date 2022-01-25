@@ -6,17 +6,6 @@ CalculationManager::CalculationManager(const Matrix &_m1, const Matrix &_m2, siz
 CalculationManager::CalculationManager(const Matrix &_m1, size_t _count_of_threads)
         : count_of_threads(_count_of_threads), m1(_m1), m2(_m1) {}
 
-double CalculationManager::sub_det(std::pair<size_t, size_t> &interval) {
-    double det = 0;
-    int sign;
-    if (interval.first % 2 == 0) sign = 1;
-    else sign = -1;
-    for (size_t i = interval.first; i < interval.second; i++) {
-        det = det + (sign * m1.matrix[0][i] * m1.simple_det(m1.minor(m1, i)));
-        sign = -sign;
-    }
-    return det;
-}
 
 void CalculationManager::sub_substr(std::pair<size_t, size_t> &interval, Matrix *result) {
     for (size_t i = interval.first; i < interval.second; i++) {
@@ -71,21 +60,6 @@ std::vector<std::pair<size_t, size_t>> CalculationManager::make_intervals_for_de
 }
 
 
-double CalculationManager::calculate_det() {
-    auto intervals = make_intervals_for_det();
-    std::vector<std::future<double>> all_futures;
-    all_futures.reserve(intervals.size());
-    for (auto &interval: intervals) {
-        all_futures.push_back(
-                std::async(std::launch::async, &CalculationManager::sub_det, this, std::ref(interval)));
-    }
-    double det = 0;
-    for (size_t i = 0; i < intervals.size(); i++) {
-        det += all_futures[i].get();
-    }
-    return det;
-}
-
 Matrix CalculationManager::calculate(void (CalculationManager::*f)(std::pair<size_t, size_t> &, Matrix *)) {
     Matrix result(m1.rows, m1.cols);
     auto intervals = make_intervals();
@@ -103,10 +77,6 @@ Matrix CalculationManager::calculate(void (CalculationManager::*f)(std::pair<siz
 
 }
 
-double CalculationManager::determinant() {
-    return calculate_det();
-}
-
 Matrix CalculationManager::multiply() {
     return calculate(&CalculationManager::sub_multi);
 }
@@ -121,25 +91,45 @@ Matrix CalculationManager::subtract() {
 
 
 
-Matrix Matrix::fast_multiply_with(const Matrix &another, size_t num_of_threads) const {
-    if (cols != another.rows) {
-        return {};
-    }
-    size_t threads_count = rows / max_rows_mult + 1;
-    if (threads_count == 1) return multiply_with(another);
-    if (threads_count > num_of_threads){
-        threads_count = num_of_threads;
-    }
-    CalculationManager multiplier(*this, another, threads_count);
-    return multiplier.multiply();
-}
 
-double Matrix::fast_det(const Matrix &mat, size_t num_of_threads) const {
-    size_t threads_count = rows / max_rows_det;
-    if (threads_count == 1) return simple_det(mat);
-    if (threads_count > num_of_threads) threads_count = num_of_threads;
-    CalculationManager det_calculator(mat, threads_count);
-    return det_calculator.determinant();
+double Matrix::fast_det(const Matrix &mat, size_t num_of_threads) const{
+    double det = 0;
+    Matrix _matrix(mat);
+    auto sgn = 1;
+    for(size_t i = 0; i < _matrix.get_rows() - 1; ++i){
+        const auto imax = _matrix.col_max(i);
+        if(std::abs(_matrix.at(imax, i)) < std::numeric_limits<double>::epsilon()) {
+            det = 0;
+            return det;
+        }
+        if(i != imax){
+            sgn *= -1;
+            _matrix.swap_rows(i, imax);
+        }
+
+        std::vector<std::future<void>> threads;
+        double n = static_cast<double>(_matrix.get_rows() - i - 1) / static_cast<double>(num_of_threads);
+        for(size_t j = 0; j < num_of_threads; j++) {
+            size_t begin = std::floor(j * n + 1 + i);
+            size_t end = std::floor((j + 1) * n + 1 + i);
+
+            if(j < num_of_threads - 1) {
+                threads.push_back(std::async(triangulation, std::ref(_matrix), i, begin, end));
+            }
+            else{
+                triangulation(_matrix, i, begin, end);
+            }
+        }
+        for(auto& j: threads){
+            j.get();
+        }
+    }
+    det = 1;
+    for(size_t i = 0; i < _matrix.get_rows(); ++i){
+        det *= _matrix.at(i, i);
+    }
+    det *= sgn;
+    return det;
 }
 
 Matrix Matrix::fast_subtract_with(const Matrix &another, size_t num_of_threads) const {
@@ -162,4 +152,17 @@ Matrix Matrix::fast_sum_with(const Matrix &another, size_t num_of_threads) const
     if (threads_count > num_of_threads) threads_count = num_of_threads;
     CalculationManager adder(*this, another, threads_count);
     return adder.sum();
+}
+
+Matrix Matrix::fast_multiply_with(const Matrix &another, size_t num_of_threads) const {
+    if (cols != another.rows) {
+        return {};
+    }
+    size_t threads_count = rows / max_rows_mult + 1;
+    if (threads_count == 1) return multiply_with(another);
+    if (threads_count > num_of_threads){
+        threads_count = num_of_threads;
+    }
+    CalculationManager multiplier(*this, another, threads_count);
+    return multiplier.multiply();
 }

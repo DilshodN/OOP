@@ -1,9 +1,11 @@
 #include <iostream>
 
+template<int...args>
+int sum(){
+    return (0 + ... + args);
+}
+
 int main(){
-    std::bitset<10> a;
-    a.set(0);
-//    auto hash = std::hash<int>{}(10);
-    std::cout << a.to_string() << std::endl;
+    std::cout << sum<1, 2, 3>() << std::endl;
     return 0;
 }

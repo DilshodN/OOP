@@ -10,11 +10,26 @@ private:
     size_t cols{};
     size_t rows{};
 
-    const size_t max_rows_sum = 300;
-    const size_t max_rows_mult = 200;
-    const size_t max_rows_det = 2;
+    size_t max_rows_sum = 300;
+    size_t max_rows_mult = 200;
+    size_t max_rows_det = 2;
+    size_t max_rows_per_thread = 100;
 
     [[nodiscard]] size_t size() const;
+
+    [[nodiscard]] Matrix subtract_with(const Matrix &another) const;
+
+    [[nodiscard]] Matrix sum_with(const Matrix &another) const;
+
+    [[nodiscard]] Matrix multiply_with(const Matrix &another) const;
+
+    [[nodiscard]] static Matrix minor(const Matrix &mat, size_t col_index);
+
+    size_t col_max(const size_t column) const;
+
+    static void triangulation(Matrix &mat, const size_t current, const size_t begin, const size_t end);
+
+    void swap_rows(const size_t i, const size_t j);
 
     friend class CalculationManager;
 
@@ -35,27 +50,11 @@ public:
 
     void fill(double value);
 
+    [[nodiscard]] size_t get_cols() const;
+
     [[nodiscard]] size_t get_rows() const;
 
-    [[nodiscard]] Matrix subtract_with(const Matrix &another) const;
-
-    [[nodiscard]] Matrix fast_subtract_with(const Matrix &another, size_t num_of_threads) const;
-
-    [[nodiscard]] Matrix sum_with(const Matrix &another) const;
-
-    [[nodiscard]] Matrix fast_sum_with(const Matrix &another, size_t num_of_threads) const;
-
-    [[nodiscard]] Matrix multiply_with(const Matrix &another) const;
-
-    [[nodiscard]] Matrix fast_multiply_with(const Matrix &another, size_t num_of_threads) const;
-
     [[nodiscard]] double det() const;
-
-    [[nodiscard]] double simple_det(const Matrix &mat) const;
-
-    [[nodiscard]] double fast_det(const Matrix &mat, size_t num_of_threads) const;
-
-    [[nodiscard]] static Matrix minor(const Matrix &mat, size_t col_index);
 
     friend Matrix operator+(const Matrix &first, const Matrix &second);
 
@@ -63,15 +62,19 @@ public:
 
     friend Matrix operator*(const Matrix &first, const Matrix &second);
 
+    double fast_det(const Matrix &mat, size_t num_of_threads) const;
+
+    [[nodiscard]] Matrix fast_subtract_with(const Matrix &another, size_t num_of_threads) const;
+
+    [[nodiscard]] Matrix fast_sum_with(const Matrix &another, size_t num_of_threads) const;
+
+    [[nodiscard]] Matrix fast_multiply_with(const Matrix &another, size_t num_of_threads) const;
+
     bool operator==(const Matrix &another) const;
 
-    size_t col_max(const size_t column) const;
+    bool operator!=(const Matrix &another) const;
 
-    double& at(size_t i, size_t j);
+    double &at(size_t i, size_t j);
 
-    void swap_rows(const size_t i, const size_t j);
-
-    static double calculate_det_without_recursion(const Matrix &mat, size_t num_of_threads);
-
-    static void triangulation(Matrix& mat, const size_t current, const size_t begin, const size_t end);
+    void set_limits(size_t max_rows_sum = 300, size_t max_rows_mult = 200, size_t max_rows_det = 2);
 };

@@ -4,6 +4,8 @@
 #include <future>
 #include <iostream>
 #include <deque>
+#include <cmath>
+
 
 class CalculationManager final{
 public:
@@ -17,9 +19,6 @@ public:
     Matrix multiply();
 
     Matrix subtract();
-
-    double determinant();
-
 private:
     size_t count_of_threads;
     const Matrix &m1;
@@ -36,8 +35,4 @@ private:
     void sub_multi(std::pair<size_t, size_t> &interval, Matrix *result);
 
     void sub_substr(std::pair<size_t, size_t> &interval, Matrix *result);
-
-    double sub_det(std::pair<size_t, size_t> &interval);
-
-    double calculate_det();
 };

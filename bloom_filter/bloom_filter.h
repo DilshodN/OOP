@@ -2,8 +2,8 @@
 
 #include <array>
 #include <vector>
-#include "base_filter.h"
-#include "null_filter.h"
+#include <ciso646>
+#include <bitset>
 #include <numeric>
 
 inline constexpr std::size_t number_of_unique_hashes = 64;
@@ -13,7 +13,7 @@ template<typename T,
         size_t TableSize = 50,
         size_t NumFunctions = number_of_unique_hashes,
         typename Dummy = std::enable_if_t<NumFunctions <= number_of_unique_hashes, bool>>
-class BloomFilter final {
+class BloomFilterCpp final {
     using hashfunc_t = Hash;
     hashfunc_t hash_func{};
     std::bitset<TableSize> _table{};
@@ -41,7 +41,7 @@ class BloomFilter final {
     };
 
 public:
-    BloomFilter() = default;
+    BloomFilterCpp() = default;
 
     void insert(const T &value) noexcept;
 
@@ -63,22 +63,22 @@ public:
         return NumFunctions;
     };
 
-    BloomFilter<T, Hash, TableSize, NumFunctions> operator&(const BloomFilter<T, Hash,
+    BloomFilterCpp<T, Hash, TableSize, NumFunctions> operator&(const BloomFilterCpp<T, Hash,
             TableSize, NumFunctions, Dummy> &other) const noexcept;
 
-    BloomFilter<T, Hash, TableSize, NumFunctions> operator|(const BloomFilter<T, Hash,
+    BloomFilterCpp<T, Hash, TableSize, NumFunctions> operator|(const BloomFilterCpp<T, Hash,
             TableSize, NumFunctions, Dummy> &other) const noexcept;
 
-    BloomFilter<T, Hash, TableSize, NumFunctions> &operator&=(const BloomFilter<T, Hash,
+    BloomFilterCpp<T, Hash, TableSize, NumFunctions> &operator&=(const BloomFilterCpp<T, Hash,
             TableSize, NumFunctions, Dummy> &other) noexcept;
 
-    BloomFilter<T, Hash, TableSize, NumFunctions> &operator|=(const BloomFilter<T, Hash,
+    BloomFilterCpp<T, Hash, TableSize, NumFunctions> &operator|=(const BloomFilterCpp<T, Hash,
             TableSize, NumFunctions, Dummy> &other) noexcept;
 };
 
 
 template<typename T, typename Hash, size_t TableSize, size_t NumFunctions, typename Dummy>
-void BloomFilter<T, Hash, TableSize, NumFunctions, Dummy>::insert(const T &value) noexcept {
+void BloomFilterCpp<T, Hash, TableSize, NumFunctions, Dummy>::insert(const T &value) noexcept {
     const auto hash = hash_func(value);
     for (size_t i = 0; i < num_of_functions(); i++) {
         const auto idx = (hash ^ salts[i]) % table_size();
@@ -87,7 +87,7 @@ void BloomFilter<T, Hash, TableSize, NumFunctions, Dummy>::insert(const T &value
 }
 
 template<typename T, typename Hash, size_t TableSize, size_t NumFunctions, typename Dummy>
-bool BloomFilter<T, Hash, TableSize, NumFunctions, Dummy>::query(const T &value) noexcept {
+bool BloomFilterCpp<T, Hash, TableSize, NumFunctions, Dummy>::query(const T &value) noexcept {
     const auto hash = hash_func(value);
     for (size_t i = 0; i < num_of_functions(); i++) {
         const auto idx = (hash ^ salts[i]) % table_size();
@@ -99,28 +99,28 @@ bool BloomFilter<T, Hash, TableSize, NumFunctions, Dummy>::query(const T &value)
 }
 
 template<typename T, typename Hash, size_t TableSize, size_t NumFunctions, typename Dummy>
-BloomFilter<T, Hash, TableSize, NumFunctions>
-BloomFilter<T, Hash, TableSize, NumFunctions, Dummy>::operator|(const BloomFilter<T, Hash,
+BloomFilterCpp<T, Hash, TableSize, NumFunctions>
+BloomFilterCpp<T, Hash, TableSize, NumFunctions, Dummy>::operator|(const BloomFilterCpp<T, Hash,
         TableSize, NumFunctions, Dummy> &other) const noexcept {
-    auto res = BloomFilter<T, Hash, TableSize, NumFunctions>();
+    auto res = BloomFilterCpp<T, Hash, TableSize, NumFunctions>();
     std::bitset<TableSize> new_table = read() | other.read();
     res.load(new_table);
     return res;
 }
 
 template<typename T, typename Hash, size_t TableSize, size_t NumFunctions, typename Dummy>
-BloomFilter<T, Hash, TableSize, NumFunctions>
-BloomFilter<T, Hash, TableSize, NumFunctions, Dummy>::operator&(const BloomFilter<T, Hash,
+BloomFilterCpp<T, Hash, TableSize, NumFunctions>
+BloomFilterCpp<T, Hash, TableSize, NumFunctions, Dummy>::operator&(const BloomFilterCpp<T, Hash,
         TableSize, NumFunctions, Dummy> &other) const noexcept {
-    auto res = BloomFilter<T, Hash, TableSize, NumFunctions>();
+    auto res = BloomFilterCpp<T, Hash, TableSize, NumFunctions>();
     std::bitset<TableSize> new_table = read() & other.read();
     res.load(new_table);
     return res;
 }
 
 template<typename T, typename Hash, size_t TableSize, size_t NumFunctions, typename Dummy>
-BloomFilter<T, Hash, TableSize, NumFunctions> &BloomFilter<T, Hash, TableSize, NumFunctions, Dummy>::operator&=(
-        const BloomFilter<T, Hash, TableSize, NumFunctions, Dummy> &other) noexcept {
+BloomFilterCpp<T, Hash, TableSize, NumFunctions> &BloomFilterCpp<T, Hash, TableSize, NumFunctions, Dummy>::operator&=(
+        const BloomFilterCpp<T, Hash, TableSize, NumFunctions, Dummy> &other) noexcept {
     auto other_table = other.read();
     table() &= other_table;
     return *this;
@@ -128,8 +128,8 @@ BloomFilter<T, Hash, TableSize, NumFunctions> &BloomFilter<T, Hash, TableSize, N
 
 
 template<typename T, typename Hash, size_t TableSize, size_t NumFunctions, typename Dummy>
-BloomFilter<T, Hash, TableSize, NumFunctions> &BloomFilter<T, Hash, TableSize, NumFunctions, Dummy>::operator|=(
-        const BloomFilter<T, Hash, TableSize, NumFunctions, Dummy> &other) noexcept {
+BloomFilterCpp<T, Hash, TableSize, NumFunctions> &BloomFilterCpp<T, Hash, TableSize, NumFunctions, Dummy>::operator|=(
+        const BloomFilterCpp<T, Hash, TableSize, NumFunctions, Dummy> &other) noexcept {
     auto other_table = other.read();
     table() |= other_table;
     return *this;

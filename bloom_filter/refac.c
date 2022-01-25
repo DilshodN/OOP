@@ -173,7 +173,7 @@ int bloom_filter_query(BloomFilter *bloomfilter, BloomFilterValue value)
     return 1;
 }
 
-void bloom_filter_read(BloomFilter *bloomfilter, unsigned char *array)
+double bloom_filter_read(BloomFilter *bloomfilter, unsigned char *array)
 {
     unsigned int array_size;
 

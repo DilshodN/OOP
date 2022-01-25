@@ -98,7 +98,7 @@ void bloom_filter_insert(BloomFilter *bloomfilter, BloomFilterValue value);
  *                             have been inserted.
  */
 
-int bloom_filter_query(BloomFilter *bloomfilter, BloomFilterValue value);
+int bloom_filter_query(BloomFilter *bloomfilter, void* value);
 
 /**
  * Read the contents of a bloom filter into an array.
@@ -109,7 +109,7 @@ int bloom_filter_query(BloomFilter *bloomfilter, BloomFilterValue value);
  *                             length.
  */
 
-void bloom_filter_read(BloomFilter *bloomfilter, unsigned char *array);
+double bloom_filter_read(BloomFilter *bloomfilter, unsigned char *array);
 
 /**
  * Load the contents of a bloom filter from an array.
