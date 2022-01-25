@@ -1,0 +1,23 @@
+#pragma once
+
+#include "Database.h"
+#include "ServerNetwork.h"
+
+class Server {
+    Database database;
+    ServerNetwork server_network;
+public:
+    Server();
+
+    void Start();
+
+    bool CheckUser(const std::string &, const std::string &);
+
+    bool AddUser(const std::string &, const std::string &);
+
+    void ProcessPacket(sf::TcpSocket*, sf::Packet);
+
+    void SendNotification(const std::string &, bool, sf::IpAddress = "localHost", unsigned short port = 0);
+
+    bool get_state();
+};

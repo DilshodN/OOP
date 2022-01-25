@@ -1,0 +1,8 @@
+Lenin_Square 30 00 80 20
+Theatre      50 15 60 05
+Central_Park 80 60 55 25
+Barbershop   00 30 20 40
+Metro        10 70 10 70
+Shop_Area    15 70 90 99
+Gallery      25 86 45 95
+Home         00 00 10 10

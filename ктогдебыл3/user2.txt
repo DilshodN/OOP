@@ -1,0 +1,2 @@
+User id: 2 path:
+Shop_Area->Barbershop->Finish

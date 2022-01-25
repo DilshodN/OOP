@@ -1,0 +1,2 @@
+User id: 1 path:
+Home->Metro->Lenin_Square->Central_Park->Lenin_Square->Finish
